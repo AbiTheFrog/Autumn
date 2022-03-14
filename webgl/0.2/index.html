@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Autumn</title>
+        <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+        <style>
+            canvas {
+                width: 100vw;
+                height: 100vh;
+                display: block;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+        </style>
+
+        <script id="vertex-shader-2d" type="glsl">
+            attribute vec4 position;
+            attribute vec4 color;
+
+            uniform vec2 resolution;
+
+            uniform mat4 transform;
+
+            varying vec4 v_color;
+            
+            void main() {
+                gl_Position = (position / vec4(resolution.xyy, 1) * 2.0 - 1.0) * transform;
+                v_color = color;
+            }
+        </script>
+
+        <script id="fragment-shader-2d" type="glsl">
+            precision mediump float;
+ 
+            varying vec4 v_color;
+            
+            void main() {
+                gl_FragColor = v_color;
+            }
+        </script>
+    </head>
+    <body>
+        <canvas id="canv"></canvas>
+        <script type="module" src="autumn/autumn.js"></script>
+    </body>
+</html>
