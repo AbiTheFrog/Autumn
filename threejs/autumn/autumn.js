@@ -24,12 +24,12 @@ import World from "./terrain/world.js";
         renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    scene.fog = new THREE.FogExp2(0x111111, 0.05);
+    scene.fog = new THREE.Fog(0x111111, 0, 10);
 
     var world;
 
     {
-        const chunkSize = 100;
+        const chunkSize = 50;
         const chunkHeight = 24;
         const worldSize = 4;
         const waterHeight = 5;

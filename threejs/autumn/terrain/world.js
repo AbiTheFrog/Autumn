@@ -16,6 +16,9 @@ class Chunk {
     mesh;
 
     constructor(scene, chunk, ox, oy, oz, size, height){
+        // add fog
+        scene.fog = new THREE.FogExp2(0x111111, 0.05);
+
         // make size x size x size chunk
         for(var i = 0; i < size; i++){
             for(var j = 0; j < size; j++){
