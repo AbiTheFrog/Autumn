@@ -24,8 +24,6 @@ import World from "./terrain/world.js";
         renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    scene.fog = new THREE.Fog(0x111111, 0, 10);
-
     var world;
 
     {
