@@ -5,6 +5,7 @@
 **/
 
 import World from "./terrain/world.js";
+import Player from "./entity/character.js";
 
 // main function
 (() => {
@@ -36,14 +37,18 @@ import World from "./terrain/world.js";
 
         camera.position.set(0, chunkHeight * 1.5, chunkHeight);
     }
-
+    
     // add light at camera
+    /*
     const light = new THREE.PointLight(0xFFFFFF, 1, 30);
     light.position.set(...camera.position);
     scene.add(light);
+    */
 
-    const ambient = new THREE.AmbientLight(0x404040 * 2); // soft white light
-    scene.add(ambient);
+    const player = new Player(camera, world);
+
+    document.onkeyup = (event) => { player.onkeyup(event.key); };
+    document.onkeydown = (event) => { player.onkeydown(event.key); };
 
     // setup controls
     const controls = new THREE.OrbitControls(camera, renderer.domElement);

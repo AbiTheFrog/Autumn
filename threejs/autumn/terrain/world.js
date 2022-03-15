@@ -12,7 +12,6 @@ function getHeight(i, j, max, min) {
 }
 
 class Chunk {
-    scene;
     mesh;
 
     constructor(scene, chunk, ox, oy, oz, size, height){
@@ -169,12 +168,10 @@ class Chunk {
         scene.add(mesh);
         
         this.mesh = mesh;
-    
-        this.scene = scene;
     }
 
-    unload(){
-        this.scene.remove(this.mesh);
+    unload(scene){
+        scene.remove(this.mesh);
         this.mesh.dispose();
     }
 };
@@ -187,7 +184,11 @@ export default class World {
 
     chunkMap;       // used to store chunks (2d array)
 
+    scene;
+
     constructor(scene, chunkSize, chunkHeight, worldSize, waterHeight){
+        this.scene;
+        
         this.chunkSize = chunkSize; this.chunkHeight = chunkHeight; this.worldSize = worldSize; this.waterHeight = waterHeight;
 
         this.chunkMap = new Array(worldSize).fill(new Array(worldSize));
@@ -223,6 +224,12 @@ export default class World {
             water.rotation.x -= Math.PI / 2;
             
             scene.add(water);
+        }
+
+        // create ambient light
+        {
+            const ambient = new THREE.AmbientLight(0x404040 * 2); // soft white light
+            scene.add(ambient);
         }
     }
 
