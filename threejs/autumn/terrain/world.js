@@ -15,9 +15,6 @@ class Chunk {
     mesh;
 
     constructor(scene, chunk, ox, oy, oz, size, height){
-        // add fog
-        scene.fog = new THREE.FogExp2(0x111111, 0.05);
-
         // make size x size x size chunk
         for(var i = 0; i < size; i++){
             for(var j = 0; j < size; j++){
@@ -187,7 +184,10 @@ export default class World {
     scene;
 
     constructor(scene, chunkSize, chunkHeight, worldSize, waterHeight){
-        this.scene;
+        // add fog
+        scene.fog = new THREE.FogExp2(0x111111, 0.05);
+
+        this.scene = scene;
         
         this.chunkSize = chunkSize; this.chunkHeight = chunkHeight; this.worldSize = worldSize; this.waterHeight = waterHeight;
 

@@ -44,6 +44,11 @@ export default class Player {
         }
     }
 
+    // update
+    update(){
+        this.light.position.set(...this.camera.position);
+    }
+
     // handle key events
     keydown(key){
         alert(key);
