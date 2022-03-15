@@ -35,25 +35,24 @@ import Player from "./entity/character.js";
         
         world = new World(scene, chunkSize, chunkHeight, worldSize, waterHeight);
 
-        camera.position.set(0, chunkHeight * 1.5, chunkHeight);
+        camera.position.set(0, chunkHeight, chunkHeight);
     }
     
     const player = new Player(camera, world);
 
     document.onkeyup = (event) => { player.keyup(event.key); };
-    document.onkeypress = (event) => { player.keydown(event.key); };
-
-    // setup controls
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    document.onkeydown = (event) => { player.keydown(event.key); };
 
     // render loop
+    var deltaTime = 0;
     const renderloop = () => {
+        var start = Date.now();
         requestAnimationFrame(renderloop);
 
-        controls.update();
-
-        player.update();
+        player.update(deltaTime);
 
         renderer.render(scene, camera);
+
+        deltaTime = (Date.now() - start) / 100;
     }; renderloop();
 })();
