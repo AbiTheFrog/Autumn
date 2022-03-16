@@ -7,7 +7,7 @@ const log = document.getElementById("log");
 const sin = Math.sin;
 const cos = Math.cos;
 
-const sens = 1;
+const sens = 2;
 
 const xaxis = new THREE.Vector3(1, 0, 0);
 const yaxis = new THREE.Vector3(0, 1, 0);
@@ -76,18 +76,11 @@ export default class Player {
             const hv = (this.keys.left ? 1 : 0) + (this.keys.right ? -1 : 0);
 
             const qx = new THREE.Quaternion();
-            qx.setFromAxisAngle(yaxis, this.rx);
-
-            const forward = new THREE.Vector3(0, 0, -1);
+            qx.setFromAxisAngle(yaxis, this.ry);
+            
+            const forward = new THREE.Vector3(-hv * speed, 0, -fv * speed);
             forward.applyQuaternion(qx);
-            forward.multiplyScalar(fv * speed);
-
-            const left = new THREE.Vector3(-1, 0, 0);
-            left.applyQuaternion(qx);
-            left.multiplyScalar(hv * speed);
-
-            forward.add(left);
-
+            
             this.camera.position.add(forward);
         }
 
@@ -159,17 +152,17 @@ export default class Player {
     }
 
     rotate(deltaX, deltaY){
-        this.rx -= (deltaX / window.innerWidth) * sens;
-        this.ry -= (deltaY / window.innerHeight) * sens;
+        this.ry -= (deltaX / window.innerWidth) * sens;
+        this.rx -= (deltaY / window.innerHeight) * sens;
 
-        if(this.ry > PI / 3){
-            this.ry = PI / 3;
-        } else if(this.ry < -PI / 3){
-            this.ry = -PI / 3;
+        if(this.rx > PI / 3){
+            this.rx = PI / 3;
+        } else if(this.rx < -PI / 3){
+            this.rx = -PI / 3;
         }
 
-        const phi = this.rx;
-        const theta = this.ry;
+        const phi = this.ry;
+        const theta = this.rx;
 
         const qx = new THREE.Quaternion();
         const qy = new THREE.Quaternion();
