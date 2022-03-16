@@ -174,8 +174,8 @@ export default class Player {
         const qx = new THREE.Quaternion();
         const qy = new THREE.Quaternion();
 
-        qx.setFromAxisAngle(yaxis, phi * sens);
-        qy.setFromAxisAngle(xaxis, theta * sens);
+        qx.setFromAxisAngle(yaxis, phi);
+        qy.setFromAxisAngle(xaxis, theta);
 
         const q = new THREE.Quaternion();
 
