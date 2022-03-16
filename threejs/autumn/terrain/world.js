@@ -185,7 +185,7 @@ export default class World {
 
     constructor(scene, chunkSize, chunkHeight, worldSize, waterHeight){
         // add fog
-        scene.fog = new THREE.FogExp2(0x111111, 0.05);
+        scene.fog = new THREE.FogExp2(0x111111, 0.08);
 
         this.scene = scene;
         

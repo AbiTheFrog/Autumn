@@ -2,9 +2,27 @@
  *  Impliments player controls
 **/
 
-const G = -1;
-
 const log = document.getElementById("log");
+
+const sin = Math.sin;
+const cos = Math.cos;
+
+const sens = 1;
+
+const xaxis = new THREE.Vector3(1, 0, 0);
+const yaxis = new THREE.Vector3(0, 1, 0);
+
+const clamp = (num, min, max) => {
+    if(num < min){
+        return min;
+    } else if(num > max){
+        return max;
+    } else {
+        return num;
+    }
+};
+
+const PI = Math.PI;
 
 export default class Player {
     camera;     // three js camera object
@@ -12,13 +30,15 @@ export default class Player {
 
     light;      // render attribute of player (a point light)
 
-    worldCache; // world height cache
-
     keys;       // key map
 
-    vy = 0;     // vertical velocity
+    rx = 0;
+    ry = 0;
 
-    constructor(camera, world){
+    phi;        // used for rotation    y
+    theta;      // used for rotation    x
+
+    constructor(camera, world, canvas){
         // save camera and world
         this.camera = camera;
         this.world = world;
@@ -31,96 +51,102 @@ export default class Player {
             this.light = light;
         }
 
-        // init world cache
-        const x = Math.floor(this.light.position.x), z = Math.floor(this.light.position.z);
-        this.worldCache = {
-            pos: [x, z],
-            height: world.height(x, z)
-        };
-
         // init key map
         this.keys = {
             up: false,
             down: false,
             left: false,
             right: false,
+            jump: false,
+            crouch: false,
+            run: false,
         };
-    }
 
-    // update world cache
-    updateCache(){
-        const x = Math.ceil(this.light.position.x), z = Math.ceil(this.light.position.z);
-        if(this.worldCache.pos[0] != x || this.worldCache.pos[1] != z){
-            this.worldCache = {
-                pos: [x, z],
-                height: Math.ceil(this.world.height(x, z))
-            };
-        }
-        return this.worldCache.height;
+        // initialize height
+        this.camera.position.y = this.world.height(this.camera.position.x, this.camera.position.z) + 2;
     }
 
     // update
     update(deltaTime){
-        const speed = 5 * deltaTime;
+        const speed = this.keys.run ? 30 * deltaTime : 10 * deltaTime;
 
-        /* something like this will need to be implimented
-        const h = this.updateCache() + 2;
+        // move along x - z
+        {
+            const fv = (this.keys.up ? 1 : 0) + (this.keys.down ? -1 : 0);
+            const hv = (this.keys.left ? 1 : 0) + (this.keys.right ? -1 : 0);
 
-        const cy = this.camera.position.y;
+            const qx = new THREE.Quaternion();
+            qx.setFromAxisAngle(yaxis, this.rx);
 
-        if(Math.floor(cy) <= h && Math.ceil(cy) >= h){
-            this.camera.position.y = h;
-            this.vy = 0;
-        } else if(cy > h){
-            this.vy += G * deltaTime;
-            this.camera.position.y += this.vy * deltaTime;
-        } else if(cy < h){
-            this.vy -= G * deltaTime;
-            this.camera.position.y += this.vy * deltaTime;
-        }
-        */
-       this.camera.position.y = this.world.height(this.camera.position.x, this.camera.position.z) + 2;
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(qx);
+            forward.multiplyScalar(fv * speed);
 
-        if(this.keys.up){
-            this.camera.position.z -= speed;
-        }
+            const left = new THREE.Vector3(-1, 0, 0);
+            left.applyQuaternion(qx);
+            left.multiplyScalar(hv * speed);
 
-        if(this.keys.down){
-            this.camera.position.z += speed;
+            forward.add(left);
+
+            this.camera.position.add(forward);
         }
 
-        if(this.keys.left){
-            this.camera.position.x -= speed;
-        }
+        // move along y
+        {
+            if(this.keys.jump){
+                this.camera.position.y += speed;
+            }
 
-        if(this.keys.right){
-            this.camera.position.x += speed;
+            if(this.keys.crouch){
+                this.camera.position.y -= speed;
+            }
         }
 
         // set light to follow
         this.light.position.set(...this.camera.position);
-
-        log.innerHTML = this.camera.position.toArray() + "<br>" + this.vy;
+        
+        // update log
+        log.innerHTML = this.camera.position.toArray();
     }
 
     // handle key events
     keyevent(key, state){
         switch(key){
             case "ArrowUp":
+            case "w":
                 this.keys.up = state;
                 break;
             
             case "ArrowDown":
+                case "s":
                 this.keys.down = state;
                 break;
     
             case "ArrowLeft":
+            case "a":
                 this.keys.left = state;
                 break;
 
             case "ArrowRight":
+            case "d":
                 this.keys.right = state;
-                break;            
+                break;
+            
+            case "q":
+                this.keys.jump = state;
+                break;
+            
+            case "e":
+                this.keys.crouch = state;
+                break;
+            
+            case " ":
+                this.keys.run = state;
+                break;
+            
+            default:
+                console.log("No action mapped to " + key);
+                break;
         }
     }
 
@@ -130,5 +156,32 @@ export default class Player {
 
     keyup(key){
         this.keyevent(key, false);
+    }
+
+    rotate(deltaX, deltaY){
+        this.rx -= (deltaX / window.innerWidth) * sens;
+        this.ry -= (deltaY / window.innerHeight) * sens;
+
+        if(this.ry > PI / 3){
+            this.ry = PI / 3;
+        } else if(this.ry < -PI / 3){
+            this.ry = -PI / 3;
+        }
+
+        const phi = this.rx;
+        const theta = this.ry;
+
+        const qx = new THREE.Quaternion();
+        const qy = new THREE.Quaternion();
+
+        qx.setFromAxisAngle(yaxis, phi * sens);
+        qy.setFromAxisAngle(xaxis, theta * sens);
+
+        const q = new THREE.Quaternion();
+
+        q.multiply(qx);
+        q.multiply(qy);
+
+        this.camera.quaternion.copy(q);
     }
 }

@@ -12,8 +12,10 @@ import Player from "./entity/character.js";
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
+    const canv = document.getElementById("canv");
+
     const renderer = new THREE.WebGLRenderer({
-        canvas: document.getElementById("canv")
+        canvas: canv
     });
 
     renderer.setSize(window.innerWidth - 0.1, window.innerHeight - 0.1);    // why!!!
@@ -38,21 +40,22 @@ import Player from "./entity/character.js";
         camera.position.set(0, chunkHeight, chunkHeight);
     }
     
-    const player = new Player(camera, world);
+    const player = new Player(camera, world, canv);
 
     document.onkeyup = (event) => { player.keyup(event.key); };
     document.onkeydown = (event) => { player.keydown(event.key); };
+    document.onmousemove = (event) => { player.rotate(event.movementX, event.movementY); };
+    document.onmousedown = () => { canv.requestPointerLock(); }
 
     // render loop
-    var deltaTime = 0;
-    const renderloop = () => {
-        var start = Date.now();
-        requestAnimationFrame(renderloop);
-
+    var lastTime = 0;
+    const renderloop = (timeStamp) => {
+        const deltaTime = (timeStamp - lastTime) / 1000;
         player.update(deltaTime);
 
         renderer.render(scene, camera);
 
-        deltaTime = (Date.now() - start) / 100;
-    }; renderloop();
+        lastTime = timeStamp;
+        requestAnimationFrame(renderloop);
+    }; requestAnimationFrame(renderloop);
 })();
