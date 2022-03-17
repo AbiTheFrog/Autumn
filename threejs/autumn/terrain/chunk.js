@@ -2,6 +2,25 @@
  *  Define world chunk type
 **/
 
+/*
+const waterMaterial = new THREE.ShaderMaterial( {
+    vertexShader: document.getElementById('vertexShader').textContent,
+    fragmentShader: document.getElementById('fragmentShader').textContent
+});
+*/
+
+const waterMaterial = new THREE.MeshLambertMaterial({
+    color: 0x6db8ff,
+    opacity: 0.5,
+    transparent: true
+});
+
+waterMaterial.onBeforeCompile = (shader) => {
+    console.log(shader.uniforms);
+    console.log(shader.vertexShader);
+    console.log(shader.fragmentShader);
+}
+
 export default class Chunk {
     mesh;
 
@@ -13,38 +32,44 @@ export default class Chunk {
     ox;
     oz;
 
+    static update(time){
+        
+    }
+
     wave(x, z, amp){
-        return this.noise.noise3D(x, z, this.t) * amp;
+        return this.noise.noise3D(x, z, this.t / 8) * amp;
     }
 
     updateWater(geometry, deltaTime){
         this.t += deltaTime;
-
-        const seg = this.size / 20;
-          
+        
         const points = [];
 
         const amp = 0.3;
 
-        for(var x = 0, nx = 0; nx < 20 + 1; x += seg, ++nx){
-            points.push([]);
-            for(var z = 0, nz = 0; nz < 20 + 1; z += seg, ++nz){
-                points[nx].push(this.wave(this.ox + x, this.oz + z, amp));
+        const size = this.size;
+
+        for(var x = 0; x < size + 1; x++){
+            points.push(new Float32Array(size + 1));
+            for(var z = 0; z < size + 1; z++){
+                points[x][z] = (this.wave(this.ox + x, this.oz + z, amp));
             }
         }
         
         const vertices = [];
         
-        for(var x = 0, nx = 0; nx < 20; x += seg, ++nx){
-            for(var z = 0, nz = 0; nz < 20; z += seg, ++nz){
-                vertices.push(...[
-                    x + seg, points[nx + 1][nz], z,
-                    x, points[nx][nz], z,
-                    x + seg, points[nx + 1][nz + 1], z + seg,
+        const seg = 1;
 
-                    x, points[nx][nz], z,
-                    x, points[nx][nz + 1], z + seg,
-                    x + seg, points[nx + 1][nz + 1], z + seg
+        for(var x = 0; x < size; x++){
+            for(var z = 0; z < size; z++){
+                vertices.push(...[
+                    x + seg, points[x + 1][z], z,
+                    x, points[x][z], z,
+                    x + seg, points[x + 1][z + 1], z + seg,
+
+                    x, points[x][z], z,
+                    x, points[x][z + 1], z + seg,
+                    x + seg, points[x + 1][z + 1], z + seg
                 ]);
             }
         }
@@ -53,6 +78,10 @@ export default class Chunk {
 
         geometry.computeVertexNormals();
         geometry.normalizeNormals();
+    }
+
+    update(deltaTime){
+        this.updateWater(this.water.geometry, deltaTime);
     }
 
     constructor(scene, chunk, noise, ox, oy, oz, size, height, waterLevel){
@@ -68,17 +97,21 @@ export default class Chunk {
 
             this.updateWater(geometry, 0);
 
+            /*
             const material = new THREE.MeshLambertMaterial({
                 color: 0x6db8ff,
                 opacity: 0.5,
                 transparent: true,
             });
+            */
 
-            const water = new THREE.Mesh(geometry, material);
+            const water = new THREE.Mesh(geometry, waterMaterial);
             
-            water.position.set(ox, waterLevel - 0.1, oz);
+            water.position.set(ox - 1, waterLevel - 0.1, oz);
 
             scene.add(water);
+
+            this.water = water;
         }
 
         // generate land

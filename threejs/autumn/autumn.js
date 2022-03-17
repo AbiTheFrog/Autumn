@@ -33,7 +33,7 @@ import Player from "./entity/character.js";
         const chunkSize = 50;
         const chunkHeight = 24;
         const worldSize = 4;
-        const waterHeight = 5;
+        const waterHeight = 10;
         
         world = new World(scene, chunkSize, chunkHeight, worldSize, waterHeight);
 
@@ -48,10 +48,18 @@ import Player from "./entity/character.js";
     document.onmousedown = () => { canv.requestPointerLock(); }
 
     // render loop
+    const time = {
+        time: 0,
+        deltaTime: 0
+    };
     var lastTime = 0;
     const renderloop = (timeStamp) => {
-        const deltaTime = (timeStamp - lastTime) / 1000;
-        player.update(deltaTime);
+        time.deltaTime = (timeStamp - lastTime) / 1000;
+        time.time += time.deltaTime;
+
+        world.update(time);
+
+        player.update(time.deltaTime);
 
         renderer.render(scene, camera);
 

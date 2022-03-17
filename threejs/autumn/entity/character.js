@@ -75,8 +75,11 @@ export default class Player {
             const fv = (this.keys.up ? 1 : 0) + (this.keys.down ? -1 : 0);
             const hv = (this.keys.left ? 1 : 0) + (this.keys.right ? -1 : 0);
 
+            const qx = new THREE.Quaternion();
+            qx.setFromAxisAngle(yaxis, this.ry);
+            
             const forward = new THREE.Vector3(-hv * speed, 0, -fv * speed);
-            forward.applyQuaternion(this.camera.quaternion);
+            forward.applyQuaternion(qx);
             
             this.camera.position.add(forward);
         }

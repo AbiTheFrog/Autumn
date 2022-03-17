@@ -24,7 +24,7 @@ export default class World {
 
     constructor(scene, chunkSize, chunkHeight, worldSize, waterHeight){
         // add fog
-        scene.fog = new THREE.FogExp2(0x111111, 0.08);
+        scene.fog = new THREE.FogExp2(0x111111, 0.08 / 30);
 
         this.scene = scene;
         
@@ -50,12 +50,16 @@ export default class World {
         
         // create ambient light
         {
-            const ambient = new THREE.AmbientLight(0x404040 * 2); // soft white light
+            const ambient = new THREE.AmbientLight(0x404040 * 5); // soft white light
             scene.add(ambient);
         }
     }
 
     height(x, z){
         return getHeight(x, z, this.chunkHeight, 0);
+    }
+
+    update(time){
+        Chunk.update(time);
     }
 };
