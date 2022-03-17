@@ -9,6 +9,7 @@ const waterMaterial = new THREE.ShaderMaterial( {
 });
 */
 
+/*
 const waterMaterial = new THREE.MeshLambertMaterial({
     color: 0x6db8ff,
     opacity: 0.5,
@@ -20,6 +21,35 @@ waterMaterial.onBeforeCompile = (shader) => {
     console.log(shader.vertexShader);
     console.log(shader.fragmentShader);
 }
+*/
+
+const waterMaterial = new THREE.MeshNormalMaterial();
+
+waterMaterial.onBeforeCompile = (shader) => {
+    const amount = 10;
+
+    shader.uniforms.time = { value: 0 };
+    shader.vertexShader = 'uniform float time;\n' + shader.vertexShader;
+    shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        [
+            `float theta = sin( time + position.y ) / ${ amount.toFixed( 1 ) };`,
+            'float c = cos( theta );',
+            'float s = sin( theta );',
+            'mat3 m = mat3( c, 0, s, 0, 1, 0, -s, 0, c );',
+            'vec3 transformed = vec3( position ) * m;',
+            'vNormal = vNormal * m;'
+        ].join( '\n' )
+    );
+
+    waterMaterial.userData.shader = shader;
+
+    waterMaterial.customProgramCacheKey = function () {
+        return amount;
+    };
+};
+
+var done = 0;
 
 export default class Chunk {
     mesh;
@@ -33,7 +63,9 @@ export default class Chunk {
     oz;
 
     static update(time){
-        
+        if(waterMaterial.userData.shader){
+            waterMaterial.userData.shader.uniforms.time.value = time.time;
+        }
     }
 
     wave(x, z, amp){
