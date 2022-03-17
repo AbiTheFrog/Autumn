@@ -2,14 +2,6 @@
  *  Define world chunk type
 **/
 
-/*
-const waterMaterial = new THREE.ShaderMaterial( {
-    vertexShader: document.getElementById('vertexShader').textContent,
-    fragmentShader: document.getElementById('fragmentShader').textContent
-});
-*/
-
-/*
 const waterMaterial = new THREE.MeshLambertMaterial({
     color: 0x6db8ff,
     opacity: 0.5,
@@ -17,125 +9,58 @@ const waterMaterial = new THREE.MeshLambertMaterial({
 });
 
 waterMaterial.onBeforeCompile = (shader) => {
-    console.log(shader.uniforms);
-    console.log(shader.vertexShader);
-    console.log(shader.fragmentShader);
-}
-*/
-
-const waterMaterial = new THREE.MeshNormalMaterial();
-
-waterMaterial.onBeforeCompile = (shader) => {
-    const amount = 10;
-
     shader.uniforms.time = { value: 0 };
+
     shader.vertexShader = 'uniform float time;\n' + shader.vertexShader;
+
     shader.vertexShader = shader.vertexShader.replace(
         '#include <begin_vertex>',
-        [
-            `float theta = sin( time + position.y ) / ${ amount.toFixed( 1 ) };`,
-            'float c = cos( theta );',
-            'float s = sin( theta );',
-            'mat3 m = mat3( c, 0, s, 0, 1, 0, -s, 0, c );',
-            'vec3 transformed = vec3( position ) * m;',
-            'vNormal = vNormal * m;'
-        ].join( '\n' )
+        ["vec4 pos = modelMatrix * vec4(position, 1);",
+        "vec3 transformed = vec3(position.x,  position.y + sin(time + pos.x + pos.z) * 0.2, position.z);"].join("\n"),
     );
-
+    
     waterMaterial.userData.shader = shader;
-
-    waterMaterial.customProgramCacheKey = function () {
-        return amount;
-    };
 };
-
-var done = 0;
 
 export default class Chunk {
     mesh;
-
     water;
-    t = 0;
-    noise;
-    size;
-
-    ox;
-    oz;
-
+    
     static update(time){
         if(waterMaterial.userData.shader){
             waterMaterial.userData.shader.uniforms.time.value = time.time;
         }
     }
 
-    wave(x, z, amp){
-        return this.noise.noise3D(x, z, this.t / 8) * amp;
-    }
-
-    updateWater(geometry, deltaTime){
-        this.t += deltaTime;
-        
-        const points = [];
-
-        const amp = 0.3;
-
-        const size = this.size;
-
-        for(var x = 0; x < size + 1; x++){
-            points.push(new Float32Array(size + 1));
-            for(var z = 0; z < size + 1; z++){
-                points[x][z] = (this.wave(this.ox + x, this.oz + z, amp));
-            }
-        }
-        
-        const vertices = [];
-        
-        const seg = 1;
-
-        for(var x = 0; x < size; x++){
-            for(var z = 0; z < size; z++){
-                vertices.push(...[
-                    x + seg, points[x + 1][z], z,
-                    x, points[x][z], z,
-                    x + seg, points[x + 1][z + 1], z + seg,
-
-                    x, points[x][z], z,
-                    x, points[x][z + 1], z + seg,
-                    x + seg, points[x + 1][z + 1], z + seg
-                ]);
-            }
-        }
-
-        geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-
-        geometry.computeVertexNormals();
-        geometry.normalizeNormals();
-    }
-
-    update(deltaTime){
-        this.updateWater(this.water.geometry, deltaTime);
-    }
-
     constructor(scene, chunk, noise, ox, oy, oz, size, height, waterLevel){
         // generate water
         {
-            this.noise = noise;
-            this.size = size;
-
-            this.ox = ox;
-            this.oz = oz;
+            const wave = (x, z) => {
+                return noise.noise2D(ox + x, oz + z) * 0.3;
+            };
 
             const geometry = new THREE.BufferGeometry();
 
-            this.updateWater(geometry, 0);
+            const vertices = [];
+            
+            for(var x = 0; x < size; x++){
+                for(var z = 0; z < size; z++){
+                    vertices.push(...[
+                        x + 1, wave(x + 1, z), z,
+                        x, wave(x, z), z,
+                        x + 1, wave(x + 1, z + 1), z + 1,
 
-            /*
-            const material = new THREE.MeshLambertMaterial({
-                color: 0x6db8ff,
-                opacity: 0.5,
-                transparent: true,
-            });
-            */
+                        x, wave(x, z), z,
+                        x, wave(x, z + 1), z + 1,
+                        x + 1, wave(x + 1, z + 1), z + 1
+                    ]);
+                }
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+
+            geometry.computeVertexNormals();
+            geometry.normalizeNormals();
 
             const water = new THREE.Mesh(geometry, waterMaterial);
             
@@ -306,6 +231,8 @@ export default class Chunk {
 
     unload(scene){
         scene.remove(this.mesh);
+        scene.remove(this.water);
         this.mesh.dispose();
+        this.water.dispose();
     }
 };
