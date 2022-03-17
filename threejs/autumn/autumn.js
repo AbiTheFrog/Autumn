@@ -36,8 +36,6 @@ import Player from "./entity/character.js";
         const waterHeight = 10;
         
         world = new World(scene, chunkSize, chunkHeight, worldSize, waterHeight);
-
-        camera.position.set(0, chunkHeight, chunkHeight);
     }
     
     const player = new Player(camera, world, canv);

@@ -64,6 +64,8 @@ export default class Player {
 
         // initialize height
         this.camera.position.y = this.world.height(this.camera.position.x, this.camera.position.z) + 2;
+        this.camera.position.x = 0;
+        this.camera.position.z = 0;
     }
 
     // update

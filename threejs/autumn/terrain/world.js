@@ -19,6 +19,7 @@ export default class World {
     waterHeight;    // height of the water level
 
     chunkMap;       // used to store chunks (2d array)
+    origin = [0, 0];
 
     scene;
 
@@ -42,8 +43,8 @@ export default class World {
         }
 
         // fill chunkmap with initial chunks
-        for(var x = -(chunkSize * worldSize / 2), nx = 0; nx < worldSize; x += chunkSize, nx++){
-            for(var z = -(chunkSize * worldSize / 2), nz = 0; nz < worldSize; z += chunkSize, nz++){
+        for(var x = 0, nx = 0; nx < worldSize; x += chunkSize, nx++){
+            for(var z = 0, nz = 0; nz < worldSize; z += chunkSize, nz++){
                 this.chunkMap[nx][nz] = new Chunk(scene, chunk, simplex, x, 0, z, chunkSize, chunkHeight, waterHeight);
             }
         }
@@ -59,7 +60,11 @@ export default class World {
         return getHeight(x, z, this.chunkHeight, 0);
     }
 
-    update(time){
+    update(time, player){
+        // update water flow
         Chunk.update(time);
+
+        // load new chunks
+        
     }
 };
