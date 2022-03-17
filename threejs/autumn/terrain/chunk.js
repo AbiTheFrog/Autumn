@@ -4,8 +4,8 @@
 
 const waterMaterial = new THREE.MeshLambertMaterial({
     color: 0x6db8ff,
-    opacity: 0.5,
-    transparent: true
+    opacity: 0.6,
+    transparent: true,
 });
 
 waterMaterial.onBeforeCompile = (shader) => {
@@ -16,7 +16,7 @@ waterMaterial.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader.replace(
         '#include <begin_vertex>',
         ["vec4 pos = modelMatrix * vec4(position, 1);",
-        "vec3 transformed = vec3(position.x,  position.y + sin(time + pos.x + pos.z) * 0.2, position.z);"].join("\n"),
+        "vec3 transformed = vec3(position.x,  position.y + (sin(time * 2.5 + pos.x) + sin(time * 2.0 + pos.z)) * 0.1, position.z);"].join("\n"),
     );
     
     waterMaterial.userData.shader = shader;

@@ -44,7 +44,7 @@ import Player from "./entity/character.js";
     document.onkeydown = (event) => { player.keydown(event.key); };
     document.onmousemove = (event) => { player.rotate(event.movementX, event.movementY); };
     document.onmousedown = () => { canv.requestPointerLock(); }
-
+    
     // render loop
     const time = {
         time: 0,
