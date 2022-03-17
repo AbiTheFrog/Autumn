@@ -211,7 +211,7 @@ export default class Chunk {
             });
             const mesh = new THREE.Mesh(geometry, material);
 
-            mesh.position.set(ox, oy, oz);
+            mesh.position.set(ox + 1, oy, oz);
             
             scene.add(mesh);
             
@@ -229,7 +229,7 @@ export default class Chunk {
 
             const water = new THREE.Mesh(geometry, waterMaterial);
             
-            water.position.set(ox - 1, oy + 0.75, oz);
+            water.position.set(ox, oy + 0.75, oz);
 
             scene.add(water);
 

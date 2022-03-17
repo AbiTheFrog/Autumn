@@ -62,10 +62,13 @@ export default class Player {
             run: false,
         };
 
-        // initialize height
-        this.camera.position.y = this.world.height(this.camera.position.x, this.camera.position.z) + 2;
-        this.camera.position.x = 0;
-        this.camera.position.z = 0;
+        // initialize position        
+        const center = world.worldSize * world.chunkSize / 2;
+        
+        this.camera.position.x = center;
+        this.camera.position.z = center;
+    
+        this.camera.position.y = world.height(this.camera.position.x, this.camera.position.z) + 2;
     }
 
     // update
