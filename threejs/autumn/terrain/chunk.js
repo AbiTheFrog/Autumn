@@ -240,7 +240,8 @@ export default class Chunk {
     unload(scene){
         scene.remove(this.mesh);
         scene.remove(this.water);
-        this.mesh.dispose();
-        this.water.dispose();
+        this.mesh.geometry.dispose();
+        this.mesh.material.dispose();
+        this.water.geometry.dispose();
     }
 };
