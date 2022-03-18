@@ -122,7 +122,43 @@ export default class World {
                     }
                 }
 
-                cx = Math.floor((camera.position.x - this.origin.x) / this.chunkSize);
+                cx = Math.floor((camera.position.x - this.origin.x) / cs);
+            }
+
+            while(cz != mid){
+                if(cz < mid){
+                    // update origin
+                    this.origin.z -= cs;
+
+                    // update chunks
+                    for(var i = 0; i < ws; i++){
+                        // unload
+                        this.chunkMap[i][ws - 1].unload(this.scene);
+                        // shift
+                        for(var j = ws - 1; j > 0; j--){
+                            this.chunkMap[i][j] = this.chunkMap[i][j - 1];
+                        }
+                        // load new chunks
+                        this.chunkMap[i][0] = new Chunk(this.scene, this.chunk, simplex, this.origin.x + i * cs, 0, this.origin.z, cs, this.chunkHeight, this.waterHeight);
+                    }
+                } else {
+                    // update origin
+                    this.origin.z += cs;
+
+                    // update chunks
+                    for(var i = 0; i < ws; i++){
+                        // unload
+                        this.chunkMap[i][0].unload(this.scene);
+                        // shift
+                        for(var j = 0; j < ws; j++){
+                            this.chunkMap[i][j] = this.chunkMap[i][j + 1];
+                        }
+                        // load new chunks
+                        this.chunkMap[i][ws - 1] = new Chunk(this.scene, this.chunk, simplex, this.origin.x + i * cs, 0, this.origin.z + (ws - 1) * cs, cs, this.chunkHeight, this.waterHeight);
+                    }
+                }
+
+                cz = Math.floor((camera.position.z - this.origin.z) / cs);
             }
         }
     }
