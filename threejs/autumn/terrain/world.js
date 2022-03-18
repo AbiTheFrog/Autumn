@@ -81,6 +81,11 @@ export default class World {
         Chunk.update(time);
 
         // load new chunks
+
+        /**
+         *  ! loading chunks on a monoaxis is fine, but loading on both axies logically fails
+        **/
+
         {
             const ws = this.worldSize;
             const cs = this.chunkSize;
