@@ -100,28 +100,29 @@ export default class World {
                         this.chunkMap[ws - 1][i].unload(this.scene);
                         // shift column over
                         for(var j = ws - 1; j > 0; j--){
-                            var a = this.chunkMap[j][i];
                             this.chunkMap[j][i] = this.chunkMap[j - 1][i];
-                            if(this.chunkMap[j][i].cmp(a)){
-                                console.log("AHHH");
-                            }
                         }
                         // load new chunks
                         this.chunkMap[0][i] = new Chunk(this.scene, this.chunk, simplex, this.origin.x, 0, (i + this.origin.z) * cs, cs, this.chunkHeight, this.waterHeight);
                     }
-
-                    console.log(this.chunkMap);
-
-                    cx = mid;
                 } else {
-                    cx = mid;
+                    // update origin
+                    this.origin.x += cs;
+                    
+                    // update chunks
+                    for(var i = 0; i < ws; i++){
+                        // unload
+                        this.chunkMap[0][i].unload(this.scene);
+                        // shift column over
+                        for(var j = 0; j < ws - 1; j++){
+                            this.chunkMap[j][i] = this.chunkMap[j + 1][i];
+                        }
+                        // load new chunks
+                        this.chunkMap[ws - 1][i] = new Chunk(this.scene, this.chunk, simplex, this.origin.x + (ws - 1) * cs, 0, (i + this.origin.z) * cs, cs, this.chunkHeight, this.waterHeight);
+                    }
                 }
 
-                //cx = Math.floor((camera.position.x - this.origin.x) / this.chunkSize);
-            }
-            
-            while(cz != mid){
-                cz = mid;
+                cx = Math.floor((camera.position.x - this.origin.x) / this.chunkSize);
             }
         }
     }
