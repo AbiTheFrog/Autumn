@@ -2,25 +2,10 @@
  *  Impliments player controls
 **/
 
-const log = document.getElementById("log");
-
-const sin = Math.sin;
-const cos = Math.cos;
-
 const sens = 2;
 
 const xaxis = new THREE.Vector3(1, 0, 0);
 const yaxis = new THREE.Vector3(0, 1, 0);
-
-const clamp = (num, min, max) => {
-    if(num < min){
-        return min;
-    } else if(num > max){
-        return max;
-    } else {
-        return num;
-    }
-};
 
 const PI = Math.PI;
 
@@ -38,7 +23,12 @@ export default class Player {
     phi;        // used for rotation    y
     theta;      // used for rotation    x
 
-    constructor(camera, world, canvas){
+    log;        // autumn engine log
+
+    constructor(camera, world, log){
+        // save log
+        this.log = log;
+
         // save camera and world
         this.camera = camera;
         this.world = world;
@@ -104,7 +94,7 @@ export default class Player {
         this.light.position.set(...this.camera.position);
         
         // update log
-        log.innerHTML = this.camera.position.toArray();
+        this.log.write(this.camera.position.toArray(), "controller");
     }
 
     // handle key events
