@@ -15,23 +15,37 @@ function getHeight(i, j, max, min) {
 export default class World {
     chunkSize;      // size of a single chunk (square)
     chunkHeight;    // max height of a chunk
-    worldSize;      // size of world in chunks
+    worldSize = 3;  // size of world in chunks
     waterHeight;    // height of the water level
 
     chunkMap;       // used to store chunks (2d array)
-    origin = [0, 0];
+    origin = {      // used to store chunkMap[0][0]'s origin
+        x: 0,
+        z: 0
+    };
+    chunk;          // chunk buffer
 
-    scene;
+    scene;          // three js scene
 
-    constructor(scene, chunkSize, chunkHeight, worldSize, waterHeight){
+    log;            // autumn engine log
+
+    constructor(scene, chunkSize, chunkHeight, waterHeight, log){
         // add fog
         scene.fog = new THREE.FogExp2(0x111111, 0.08 / 30);
 
-        this.scene = scene;
-        
-        this.chunkSize = chunkSize; this.chunkHeight = chunkHeight; this.worldSize = worldSize; this.waterHeight = waterHeight;
+        this.scene = scene; this.log = log;
+      
+        // 5 x 5 chunk map by default
+        const worldSize = this.worldSize;
 
-        this.chunkMap = new Array(worldSize).fill(new Array(worldSize));
+        // set some variables
+        this.chunkSize = chunkSize; this.chunkHeight = chunkHeight; this.waterHeight = waterHeight;
+
+        // init chunk map
+        this.chunkMap = new Array(worldSize);
+        for(var i = 0; i < worldSize; i++){
+          this.chunkMap[i] = new Array(worldSize);
+        }
 
         // initialize chunk (save allocations)
         const chunk = new Array(chunkSize);
@@ -41,6 +55,8 @@ export default class World {
                 chunk[i][j] = new Uint8Array(chunkHeight);
             }
         }
+
+        this.chunk = chunk;
 
         // fill chunkmap with initial chunks
         for(var x = 0, nx = 0; nx < worldSize; x += chunkSize, nx++){
@@ -60,11 +76,53 @@ export default class World {
         return getHeight(x, z, this.chunkHeight, 0);
     }
 
-    update(time, player){
+    update(time, camera){
         // update water flow
         Chunk.update(time);
 
         // load new chunks
-        
+        {
+            const ws = this.worldSize;
+            const cs = this.chunkSize;
+            const mid = Math.floor(this.worldSize / 2);
+
+            var cx = Math.floor((camera.position.x - this.origin.x) / cs), cz = Math.floor((camera.position.z - this.origin.z) / cs);
+            this.log.write("(" + cx + "," + cz + ")", "world");
+
+            while(cx != mid){
+                if(cx < mid){
+                    // update origin
+                    this.origin.x -= cs;
+                    
+                    // update chunks
+                    for(var i = 0; i < ws; i++){
+                        // unload
+                        this.chunkMap[ws - 1][i].unload(this.scene);
+                        // shift column over
+                        for(var j = ws - 1; j > 0; j--){
+                            var a = this.chunkMap[j][i];
+                            this.chunkMap[j][i] = this.chunkMap[j - 1][i];
+                            if(this.chunkMap[j][i].cmp(a)){
+                                console.log("AHHH");
+                            }
+                        }
+                        // load new chunks
+                        this.chunkMap[0][i] = new Chunk(this.scene, this.chunk, simplex, this.origin.x, 0, (i + this.origin.z) * cs, cs, this.chunkHeight, this.waterHeight);
+                    }
+
+                    console.log(this.chunkMap);
+
+                    cx = mid;
+                } else {
+                    cx = mid;
+                }
+
+                //cx = Math.floor((camera.position.x - this.origin.x) / this.chunkSize);
+            }
+            
+            while(cz != mid){
+                cz = mid;
+            }
+        }
     }
 };
